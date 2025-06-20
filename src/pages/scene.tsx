@@ -80,7 +80,7 @@ function Scene() {
         />
 
         <SSAO
-          samples={31} // качество
+          samples={31}          // качество
           radius={0.15}
           intensity={20}
           luminanceInfluence={0.5}
