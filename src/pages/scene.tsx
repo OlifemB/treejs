@@ -1,9 +1,9 @@
 import {Canvas, type ThreeElements, useFrame} from '@react-three/fiber';
 import {Physics} from '@react-three/cannon';
 import {OrbitControls, useGLTF} from '@react-three/drei';
-import {useRef} from "react";
+import {useEffect, useRef} from "react";
 import {EffectComposer, Bloom, DepthOfField, SSAO} from '@react-three/postprocessing';
-import {PointLight} from "three";
+import {DoubleSide, PointLight} from "three";
 import {BlendFunction} from 'postprocessing';
 
 function AnimatedLight() {
@@ -16,6 +16,23 @@ function AnimatedLight() {
 
 function Model(props: ThreeElements['mesh']) {
   const {scene} = useGLTF('/objects/forest_house/scene.gltf');
+
+  useEffect(() => {
+    scene.traverse((obj) => {
+      if (obj?.isMesh) {
+        const mat = obj?.material;
+        if (mat.transparent) {
+          console.log(1)
+          // Исправляем поведение прозрачности
+          mat.depthWrite = false; // отключаем запись в Z-буфер
+          mat.alphaTest = 0.5;    // скрываем пиксели ниже порога прозрачности
+          mat.side = DoubleSide; // если нужно видеть и сзади
+          mat.alphaTes =0.5;
+        }
+      }
+    });
+  }, [scene]);
+
   return (
     <primitive
       {...props}
@@ -67,7 +84,6 @@ function Scene() {
           radius={0.15}
           intensity={20}
           luminanceInfluence={0.5}
-          color="black"
         />
       </EffectComposer>
     </>
