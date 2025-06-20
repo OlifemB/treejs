@@ -13,6 +13,7 @@
     "@react-three/cannon": "^6.6.0",
     "@react-three/drei": "^10.3.0",
     "@react-three/fiber": "^9.1.2",
+    "@react-three/postprocessing": "^3.0.4",
     "@tailwindcss/vite": "^4.1.10",
     "normalize.css": "^8.0.1",
     "react": "^19.1.0",

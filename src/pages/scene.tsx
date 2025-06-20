@@ -1,28 +1,95 @@
-import {Canvas} from '@react-three/fiber';
+import {Canvas, type ThreeElements, useFrame} from '@react-three/fiber';
 import {Physics} from '@react-three/cannon';
 import {OrbitControls, useGLTF} from '@react-three/drei';
+import {useRef} from "react";
+import {EffectComposer, Bloom, DepthOfField, SSAO} from '@react-three/postprocessing';
+import {PointLight} from "three";
+import {BlendFunction} from 'postprocessing';
 
-function Model() {
+function AnimatedLight() {
+  const light = useRef<PointLight>(null!);
+  useFrame(({clock}) => {
+    light.current.position.x = Math.sin(clock.getElapsedTime()) * 5;
+  });
+  return <pointLight ref={light} position={[0, 5, 0]} intensity={100}/>;
+}
+
+function Model(props: ThreeElements['mesh']) {
   const {scene} = useGLTF('/objects/forest_house/scene.gltf');
-  return <primitive object={scene} scale={20} rotation={[0, 1.6, 0]} position={[0, -1, 0]}/>;
+  return (
+    <primitive
+      {...props}
+      object={scene}
+      rotation={[0, 1.6, 0]}
+      position={[0, -1.5, 0]}
+      scale={16}
+    />
+  )
+}
+
+const TextBlock = () => {
+  return (
+    <div className={'absolute right-10 top-10 px-8 py-4 rounded-sm bg-black/50 backdrop-blur-2xl text-white'}>
+      v.0.0.1
+    </div>
+  )
 }
 
 function Scene() {
+  const sunRef = useRef(null!);
   return (
-    <Canvas className={'w-screen h-screen'}>
-      <ambientLight intensity={0.5}/>
+    <>
+      <ambientLight/>
       <pointLight position={[10, 10, 10]}/>
+      <AnimatedLight/>
+
       <Physics>
-        <Model/>
+        <Model ref={sunRef}/>
       </Physics>
-      <OrbitControls
-        minPolarAngle={Math.PI / 4}   // 45° вниз
-        maxPolarAngle={Math.PI / 2}   // 90° (горизонтально)
-        minAzimuthAngle={-Math.PI / 4} // -45° влево
-        maxAzimuthAngle={Math.PI / 4}  // +45° вп
-      />
-    </Canvas>
+
+      <EffectComposer>
+        <Bloom
+          intensity={1.2}
+          luminanceThreshold={0.5}
+          luminanceSmoothing={0.3}
+          blendFunction={BlendFunction.ADD}
+        />
+
+        <DepthOfField
+          focusDistance={0.02}  // 0 = ближайшая точка, 1 = бесконечность
+          focalLength={0.5}     // "сила" фокусировки
+          bokehScale={1}        // интенсивность размытия
+          height={1200}         // качество (больше = чётче, но тяжелее)
+        />
+
+        <SSAO
+          samples={31} // качество
+          radius={0.15}
+          intensity={20}
+          luminanceInfluence={0.5}
+          color="black"
+        />
+      </EffectComposer>
+    </>
   );
 }
 
-export default Scene;
+const App = () => {
+  return (
+    <>
+      <Canvas camera={{fov: 50}}>
+        <Scene/>
+        <OrbitControls
+          minPolarAngle={Math.PI / 4}   // 45° вниз
+          maxPolarAngle={Math.PI / 2}   // 90° (горизонтально)
+          // minAzimuthAngle={-Math.PI / 4} // -45° влево
+          // maxAzimuthAngle={Math.PI / 4}  // +45° вправо
+        />
+      </Canvas>
+
+      <TextBlock/>
+    </>
+  )
+}
+
+export default App;
