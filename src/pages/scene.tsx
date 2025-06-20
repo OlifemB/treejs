@@ -1,28 +1,6 @@
-import {Canvas, useLoader} from '@react-three/fiber';
+import {Canvas} from '@react-three/fiber';
 import {Physics, useBox, usePlane} from '@react-three/cannon';
 import {OrbitControls, useGLTF} from '@react-three/drei';
-import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
-
-function Box(props) {
-  const [ref] = useBox(() => ({mass: 1, position: [0, 5, 0], ...props}));
-  return (
-    <mesh ref={ref}>
-      <boxGeometry args={[1, 1, 1]}/>
-      <meshStandardMaterial color="orange"/>
-    </mesh>
-  );
-}
-
-function Plane(props) {
-  const [ref] = usePlane(() => ({rotation: [-Math.PI / 2, 0, 0], ...props}));
-  return (
-    <mesh ref={ref}>
-      <planeGeometry args={[100, 100]}/>
-      <meshStandardMaterial color="gray"/>
-    </mesh>
-  );
-}
-
 
 function Model() {
   const {scene} = useGLTF('/objects/forest_house/scene.gltf');
@@ -35,9 +13,6 @@ function Scene() {
       <ambientLight intensity={0.5}/>
       <pointLight position={[10, 10, 10]}/>
       <Physics>
-        {/*  <Box />*/}
-        {/*  <Box position={[1, 6, 0]} />*/}
-        {/*  <Plane />*/}
         <Model/>
       </Physics>
       <OrbitControls
