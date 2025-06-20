@@ -3,8 +3,12 @@ import {Physics} from '@react-three/cannon';
 import {OrbitControls, useGLTF} from '@react-three/drei';
 import {useEffect, useRef} from "react";
 import {EffectComposer, Bloom, DepthOfField, SSAO} from '@react-three/postprocessing';
-import {DoubleSide, PointLight} from "three";
+import {DoubleSide, Mesh, PointLight} from "three";
 import {BlendFunction} from 'postprocessing';
+import * as THREE from 'three';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls'
 
 function AnimatedLight() {
   const light = useRef<PointLight>(null!);
@@ -16,11 +20,10 @@ function AnimatedLight() {
 
 function Model(props: ThreeElements['mesh']) {
   const {scene} = useGLTF('/objects/forest_house/scene.gltf');
-
   useEffect(() => {
     scene.traverse((obj) => {
-      if (obj?.isMesh) {
-        const mat = obj?.material;
+      if (obj instanceof Mesh) {
+        const mat = obj.material;
         if (mat.transparent) {
           mat.alphaTest = 0.5;          // скрываем пиксели с низким альфа
           mat.depthWrite = true;        // чтобы правильно рисовалось по глубине
@@ -30,6 +33,7 @@ function Model(props: ThreeElements['mesh']) {
       }
     });
   }, [scene]);
+
 
   return (
     <primitive
@@ -51,7 +55,6 @@ const TextBlock = () => {
 }
 
 function Scene() {
-  const sunRef = useRef(null!);
   return (
     <>
       <ambientLight/>
@@ -59,7 +62,7 @@ function Scene() {
       <AnimatedLight/>
 
       <Physics>
-        <Model ref={sunRef}/>
+        <Model/>
       </Physics>
 
       <EffectComposer>
@@ -88,17 +91,45 @@ function Scene() {
   );
 }
 
+function CameraController() {
+  const controlsRef = useRef<OrbitControlsImpl>(null);
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const target = controls.target;
+
+    // Ограничения позиции цели (в world units)
+    target.x = THREE.MathUtils.clamp(target.x, -2, 2);
+    target.y = THREE.MathUtils.clamp(target.y, -1, 1);
+    target.z = THREE.MathUtils.clamp(target.z, -10, 10);
+
+    // Можно также ограничить позицию самой камеры, если нужно:
+    // camera.position.x = THREE.MathUtils.clamp(camera.position.x, -5, 5);
+
+    controls.update(); // обязательно после изменения target
+  });
+
+  return (
+    <OrbitControls
+      minPolarAngle={Math.PI / 4}   // 45° вниз
+      maxPolarAngle={Math.PI / 2}   // 90° (горизонтально)
+      // minAzimuthAngle={-Math.PI / 4} // -45° влево
+      // maxAzimuthAngle={Math.PI / 4}  // +45° вправо
+      minDistance={3}   // минимальное приближение
+      maxDistance={8}  // максимальное отдаление
+    />
+  )
+    ;
+}
+
 const App = () => {
   return (
     <>
       <Canvas camera={{fov: 50}}>
         <Scene/>
-        <OrbitControls
-          minPolarAngle={Math.PI / 4}   // 45° вниз
-          maxPolarAngle={Math.PI / 2}   // 90° (горизонтально)
-          // minAzimuthAngle={-Math.PI / 4} // -45° влево
-          // maxAzimuthAngle={Math.PI / 4}  // +45° вправо
-        />
+        <CameraController/>
       </Canvas>
 
       <TextBlock/>
