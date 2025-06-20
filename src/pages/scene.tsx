@@ -1,5 +1,5 @@
 import {Canvas} from '@react-three/fiber';
-import {Physics, useBox, usePlane} from '@react-three/cannon';
+import {Physics} from '@react-three/cannon';
 import {OrbitControls, useGLTF} from '@react-three/drei';
 
 function Model() {
