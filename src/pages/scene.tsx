@@ -22,12 +22,10 @@ function Model(props: ThreeElements['mesh']) {
       if (obj?.isMesh) {
         const mat = obj?.material;
         if (mat.transparent) {
-          console.log(1)
-          // Исправляем поведение прозрачности
-          mat.depthWrite = false; // отключаем запись в Z-буфер
-          mat.alphaTest = 0.5;    // скрываем пиксели ниже порога прозрачности
+          mat.alphaTest = 0.5;          // скрываем пиксели с низким альфа
+          mat.depthWrite = true;        // чтобы правильно рисовалось по глубине
+          mat.transparent = false;      // отключаем прозрачность как флаг
           mat.side = DoubleSide; // если нужно видеть и сзади
-          mat.alphaTes =0.5;
         }
       }
     });
@@ -35,11 +33,11 @@ function Model(props: ThreeElements['mesh']) {
 
   return (
     <primitive
-      {...props}
       object={scene}
       rotation={[0, 1.6, 0]}
       position={[0, -1.5, 0]}
       scale={16}
+      {...props}
     />
   )
 }
