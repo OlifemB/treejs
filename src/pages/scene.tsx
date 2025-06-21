@@ -1,6 +1,6 @@
-import {Canvas, type ThreeElements} from '@react-three/fiber';
+import {Canvas, type ThreeElements, useThree} from '@react-three/fiber';
 import {Physics} from '@react-three/cannon';
-import {CameraControls, Environment, Lightformer, Sky, Stars, useGLTF} from '@react-three/drei';
+import {CameraControls, Environment,Stars, useGLTF} from '@react-three/drei';
 import {useEffect} from "react";
 import {
   EffectComposer,
@@ -10,10 +10,13 @@ import {
   Vignette,
   SMAA,
   Scanline,
-  ChromaticAberration, HueSaturation, BrightnessContrast, ToneMapping
+  ChromaticAberration,
+  HueSaturation,
+  BrightnessContrast,
 } from '@react-three/postprocessing';
 import {DoubleSide, Mesh} from "three";
 import {BlendFunction} from 'postprocessing';
+import * as THREE from 'three'
 
 //Html from drei
 
@@ -48,7 +51,7 @@ function Model(props: ThreeElements['mesh']) {
 const TextBlock = () => {
   return (
     <div className={'absolute left-10 bottom-10 px-8 py-4 rounded-sm bg-black/50 backdrop-blur-2xl text-white text-xs'}>
-      <b>v 0.0.3</b>
+      <b>v 0.0.4</b>
       <br/>
       <ul>
         <li>EffectComposer</li>
@@ -64,6 +67,16 @@ const TextBlock = () => {
       </ul>
     </div>
   )
+}
+
+function Fog() {
+  const { scene } = useThree()
+
+  useEffect(() => {
+    scene.fog = new THREE.Fog('#d1d1e0', 5, 20) // цвет, ближняя и дальняя границы
+  }, [scene])
+
+  return null
 }
 
 function Scene() {
@@ -89,6 +102,7 @@ function Scene() {
 
       <Stars radius={100} depth={30} count={1000} factor={4}/>
 
+      <Fog/>
       <EffectComposer>
         <SSAO
           samples={31}
@@ -133,6 +147,9 @@ function Scene() {
         <SMAA/>
 
       </EffectComposer>
+
+      <color attach="background" args={['#cccccc']} />
+      <fog attach="fog" args={['#cccccc', 5, 20]} />
     </>
   );
 }
